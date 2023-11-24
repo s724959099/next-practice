@@ -2,59 +2,80 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-
-
-const schema = z.object({
-  email: z.string().email({ message: "Invalid email format" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-  name: z.string().optional(),
-});
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from "@/components/ui/card";
+import FormInput from "@/components/FormInput";
+import { signUpSchema, signUpType } from "@/model/user";
+import { signUp } from "@/services/user";
+import { useToast } from "@/components/ui/use-toast";
+import { cwServerAction } from "@/lib/utils";
+import { ServerFieldError } from "@/exceptions/error";
 
 function Page() {
+  const { register, handleSubmit, setError, formState: { errors } } = useForm<signUpType>({
+    resolver: zodResolver(signUpSchema)
+  });
+  const { toast } = useToast();
+
+
+  const onSubmit = async (data: signUpType) => {
+    try {
+      const result = await cwServerAction(signUp)(data);
+      console.log(result);
+    } catch (e) {
+      console.log(e);
+      if (e instanceof ServerFieldError) {
+        e.fieldsError.forEach(fieldError => {
+          setError(fieldError.field as keyof signUpType, { type: "manual", message: fieldError.message });
+        });
+        return;
+      }
+      toast({
+        title: "Unknow error",
+        description: "This is an unknow error, please try again later",
+      });
+
+    }
+  };
 
   return (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>Create project</CardTitle>
-        <CardDescription>Deploy your new project in one-click.</CardDescription>
+        <CardTitle>Sign Up</CardTitle>
+        <CardDescription>Start your journey with us and unlock your potential.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <form>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid w-full items-center gap-4">
-            <div className="flex flex-col space-y-1.5">
-              <Label>Name</Label>
-              <Input placeholder="Name of your project"/>
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label>Email</Label>
-              <Input placeholder="Email of your project"/>
-            </div>
-            <div className="flex flex-col space-y-1.5">
-              <Label>Passowrd</Label>
-              <Input placeholder="Password of your project"/>
-            </div>
-
-
+            <FormInput name="Name"
+                       placeholder="Name of your project"
+                       required
+                       error={errors.name}
+                       registerProps={register("name")}
+            />
+            <FormInput name="Email"
+                       placeholder="Email of your project"
+                       required
+                       error={errors.email}
+                       registerProps={register("email")}
+            />
+            <FormInput name="Password"
+                       placeholder="Password of your project"
+                       required
+                       type="password"
+                       error={errors.password}
+                       registerProps={register("password")}
+            />
           </div>
+          <CardFooter className="flex justify-between pt-10">
+            <Button type="button" variant="outline"
+            >Cancel</Button>
+            <Button type="submit">Submit</Button>
+          </CardFooter>
         </form>
       </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button variant="outline">Cancel</Button>
-        <Button>Deploy</Button>
-      </CardFooter>
     </Card>
   );
 }
