@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +14,7 @@ import { cwServerAction } from "@/lib/utils";
 import { ServerFieldError } from "@/exceptions/error";
 
 function Page() {
+  const router = useRouter();
   const { register, handleSubmit, setError, formState: { errors } } = useForm<signUpType>({
     resolver: zodResolver(signUpSchema)
   });
@@ -23,6 +25,8 @@ function Page() {
     try {
       const result = await cwServerAction(signUp)(data);
       console.log(result);
+      router.push("/login");
+
     } catch (e) {
       console.log(e);
       if (e instanceof ServerFieldError) {
