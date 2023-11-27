@@ -24,7 +24,6 @@ function Page() {
   const onSubmit = async (data: signUpType) => {
     try {
       const result = await cwServerAction(signUp)(data);
-      console.log(result);
       router.push("/login");
 
     } catch (e) {

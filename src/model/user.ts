@@ -6,3 +6,6 @@ export const signUpSchema = z.object({
   name: z.string(),
 });
 export type signUpType = z.infer<typeof signUpSchema>;
+export type userType = signUpType & {
+  salt?: string;
+};
