@@ -1,18 +1,16 @@
-type ServerFieldErrorType = {
-  field: string;
-  message: string;
-}
+import { ServerFieldErrorType } from "@/model/error";
 
-export class ServerFieldError extends Error {
-  name: string = "ServerFieldError";
+
+export class FieldUniqueError extends Error {
+  name: string = "FieldUniqueError";
   fieldsError: ServerFieldErrorType[];
-  fields: string[];
+  data: string[];
   status: number = 400;
 
-  constructor(fields: string[], message: string = "ServerFieldError") {
+  constructor(data: string[], message: string = "FieldUniqueError") {
     super(message);
-    this.fields = fields;
-    this.fieldsError = fields.map((field) => {
+    this.data = data;
+    this.fieldsError = data.map((field) => {
       return {
         field,
         message: `${field.toUpperCase()} Already exists`
@@ -21,14 +19,31 @@ export class ServerFieldError extends Error {
   }
 }
 
+export class FieldCustomError extends Error {
+  name: string = "FieldCustomError";
+  fieldsError: ServerFieldErrorType[];
+  data: ServerFieldErrorType[];
+  status: number = 400;
+
+  constructor(data: ServerFieldErrorType[], message: string = "FieldCustomError") {
+    super(message);
+    this.data = data;
+    this.fieldsError = data;
+  }
+}
+
+
 export class ServerUnknownError extends Error {
   name = "ServerUnknownError";
   status = 500;
+
   constructor(message: string = "ServerUnknownError") {
     super(message);
   }
 }
+
 export const serverErrorMapping = {
   ServerUnknownError,
-  ServerFieldError
-}
+  FieldUniqueError,
+  FieldCustomError,
+};

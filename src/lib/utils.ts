@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { WrappedResponseType } from "@/model/utils";
-import { serverErrorMapping, ServerFieldError } from "@/exceptions/error";
+import { serverErrorMapping, FieldUniqueError } from "@/exceptions/error";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -13,9 +13,9 @@ export function cwServerAction<T extends (...args: any[]) => Promise<any>>(fn: T
     if (result.error) {
       const ErrorClass = serverErrorMapping[result.error.name as keyof typeof serverErrorMapping];
       const errorName = result.error.name;
-      console.log(result.error.name, ErrorClass instanceof ServerFieldError);
-      if (errorName === "ServerFieldError") {
-        throw new ErrorClass(result.error.fields);
+      console.log(result.error.name, ErrorClass instanceof FieldUniqueError);
+      if (errorName!=="ServerUnknownError") {
+        throw new ErrorClass(result.error.data);
       } else {
         throw new ErrorClass(result.error.message);
       }

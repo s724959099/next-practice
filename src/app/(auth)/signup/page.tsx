@@ -11,7 +11,7 @@ import { signUpSchema, signUpType } from "@/model/user";
 import { signUp } from "@/services/user";
 import { useToast } from "@/components/ui/use-toast";
 import { cwServerAction } from "@/lib/utils";
-import { ServerFieldError } from "@/exceptions/error";
+import { FieldUniqueError } from "@/exceptions/error";
 
 function Page() {
   const router = useRouter();
@@ -28,7 +28,7 @@ function Page() {
 
     } catch (e) {
       console.log(e);
-      if (e instanceof ServerFieldError) {
+      if (e instanceof FieldUniqueError) {
         e.fieldsError.forEach(fieldError => {
           setError(fieldError.field as keyof signUpType, { type: "manual", message: fieldError.message });
         });

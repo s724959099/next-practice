@@ -1,9 +1,9 @@
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
-import { ServerFieldError, ServerUnknownError } from "@/exceptions/error";
+import { FieldUniqueError, serverErrorMapping, ServerUnknownError } from "@/exceptions/error";
 import { WrappedResponseType } from "@/model/utils";
 
 
-export const isFieldError = (error: any) => {
+export const isFieldUniqueError = (error: any) => {
   return error instanceof PrismaClientKnownRequestError && error.code === "P2002" && error.meta?.target && Array.isArray(error.meta.target);
 };
 
@@ -25,8 +25,11 @@ export function withErrorHandling<T extends (...args: any[]) => Promise<any>>(fn
     try {
       return await fn(...args);
     } catch (error: PrismaClientKnownRequestError | any) {
-      if (isFieldError(error)) {
-        throw new ServerFieldError(error.meta.target);
+      if (isFieldUniqueError(error)) {
+        throw new FieldUniqueError(error.meta.target);
+      }
+      if (error.name in serverErrorMapping) {
+        throw error;
       }
       throw new ServerUnknownError();
     }

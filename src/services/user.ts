@@ -1,18 +1,55 @@
 "use server";
-import { userType } from "@/model/user";
+import { loginType, signUpType } from "@/model/user";
 import prisma from "@/model/db";
 import { wrapServerAction } from "@/services/utils";
-import { hashPassword } from "@/lib/hash";
+import { hashPassword, verifyPassword } from "@/lib/hash";
+import { FieldCustomError } from "@/exceptions/error";
+import { redirect } from "next/navigation";
 
-export const signUp = wrapServerAction(async (user: userType) => {
+
+export const signUp = wrapServerAction(async (user: signUpType) => {
   const {
     salt,
     hash
   } = hashPassword(user.password);
-  user.password = hash;
-  user.salt = salt;
+  const userData = {
+    ...user,
+    salt,
+    password: hash
+  };
 
   return await prisma.user.create({
-    data: user
+    data: userData
   });
+});
+export const login = wrapServerAction(async (user: loginType) => {
+  const mUser = await prisma.user.findUnique({
+    where: {
+      email: user.email
+    }
+  });
+  if (!mUser) {
+    throw new FieldCustomError([
+      {
+        field: "password",
+        message: "Invalid email or password"
+      }
+    ]);
+  }
+  const isPasswordValid = verifyPassword({
+    salt: mUser.salt,
+    hash: mUser.password,
+    userPassword: user.password
+  });
+  if (!isPasswordValid) {
+    throw new FieldCustomError([
+      {
+        field: "password",
+        message: "Invalid email or password"
+      }
+    ]);
+  }
+  // redirect("/dashboard")
+
+
 });
