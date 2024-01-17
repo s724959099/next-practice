@@ -22,7 +22,7 @@ export class FieldUniqueError extends Error {
 export class FieldCustomError extends Error {
   name: string = "FieldCustomError";
   fieldsError: ServerFieldErrorType[];
-  data: ServerFieldErrorType[];
+  data: ServerFieldErrorType[] ;
   status: number = 400;
 
   constructor(data: ServerFieldErrorType[], message: string = "FieldCustomError") {

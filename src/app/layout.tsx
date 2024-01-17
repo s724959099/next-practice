@@ -4,6 +4,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
+import NextAuthSessionProvider from "@/providers/sessionProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,11 +21,13 @@ export default function RootLayout({
   return (
     <html lang="en">
     <body className={inter.className}>
-    <Nav/>
-    <main className="flex container justify-center pt-[20px]">
-      {children}
-    </main>
-    <Toaster/>
+    <NextAuthSessionProvider>
+      <Nav/>
+      <main className="flex container justify-center pt-[20px]">
+        {children}
+      </main>
+      <Toaster/>
+    </NextAuthSessionProvider>
     </body>
     </html>
   );
